@@ -13,9 +13,10 @@ import {
   Code2
 } from 'lucide-react';
 import GithubIcon from './icons/GithubIcon';
-import { projectsData } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 
 export default function Projects() {
+  const { projects } = usePortfolio();
   const [activeProjectModal, setActiveProjectModal] = useState(null);
 
   return (
@@ -34,7 +35,7 @@ export default function Projects() {
 
         {/* Projects Cards Grid Spread Across Full Viewport */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-          {projectsData.map((project) => (
+          {projects.map((project) => (
             <div
               key={project.id}
               className="white-card rounded-3xl p-6 sm:p-8 flex flex-col justify-between group hover:border-indigo-300"

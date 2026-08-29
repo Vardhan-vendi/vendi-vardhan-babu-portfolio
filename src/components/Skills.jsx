@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { usePortfolio } from '../context/PortfolioContext';
 import { 
   JavaIcon, 
   SpringBootIcon, 
@@ -17,33 +18,52 @@ import {
   JWTIcon 
 } from './icons/TechIcons';
 
-// Track 1 Technologies (Left Stream)
-const track1Technologies = [
-  { name: 'Java', role: 'OOP & Multithreading', Icon: JavaIcon },
-  { name: 'Spring Boot', role: 'REST APIs & Microservices', Icon: SpringBootIcon },
-  { name: 'React.js', role: 'Frontend UI & Hooks', Icon: ReactIcon },
-  { name: 'Node.js', role: 'Backend Event Loop', Icon: NodeIcon },
-  { name: 'MongoDB', role: 'NoSQL & Atlas Cloud', Icon: MongoIcon },
-  { name: 'MySQL', role: 'Relational Database & SQL', Icon: MySQLIcon },
-  { name: 'Python', role: 'ML & NumPy/Pandas', Icon: PythonIcon },
-  { name: 'JavaScript', role: 'ES6+ & Async/Await', Icon: JavaScriptIcon },
-];
-
-// Track 2 Technologies (Right Stream)
-const track2Technologies = [
-  { name: 'Tailwind CSS', role: 'Responsive Utility CSS', Icon: TailwindIcon },
-  { name: 'JWT Auth', role: 'Stateless Security & RBAC', Icon: JWTIcon },
-  { name: 'HTML5', role: 'Semantic DOM Structure', Icon: HTML5Icon },
-  { name: 'CSS3', role: 'Modern Flex/Grid Layouts', Icon: CSS3Icon },
-  { name: 'Git & GitHub', role: 'Version Control & CI/CD', Icon: GitIcon },
-  { name: 'Postman', role: 'API Testing & Mocks', Icon: PostmanIcon },
-  { name: 'Spring Security', role: 'Role-Based Access Control', Icon: SpringBootIcon },
-  { name: 'Express.js', role: 'Middleware & Routing', Icon: NodeIcon },
-];
+const iconLookup = {
+  Java: JavaIcon,
+  SpringBoot: SpringBootIcon,
+  React: ReactIcon,
+  Node: NodeIcon,
+  MongoDB: MongoIcon,
+  MySQL: MySQLIcon,
+  Python: PythonIcon,
+  JavaScript: JavaScriptIcon,
+  Tailwind: TailwindIcon,
+  HTML5: HTML5Icon,
+  CSS3: CSS3Icon,
+  Git: GitIcon,
+  Postman: PostmanIcon,
+  JWT: JWTIcon,
+};
 
 export default function Skills() {
+  const { skills } = usePortfolio();
   const [isPausedTrack1, setIsPausedTrack1] = useState(false);
   const [isPausedTrack2, setIsPausedTrack2] = useState(false);
+
+  const getOfficialIcon = (skill) => {
+    if (skill.icon && iconLookup[skill.icon]) return iconLookup[skill.icon];
+    const lower = skill.name.toLowerCase();
+    if (lower.includes('java') && !lower.includes('javascript')) return JavaIcon;
+    if (lower.includes('spring')) return SpringBootIcon;
+    if (lower.includes('react')) return ReactIcon;
+    if (lower.includes('node') || lower.includes('express')) return NodeIcon;
+    if (lower.includes('mongo')) return MongoIcon;
+    if (lower.includes('mysql') || lower.includes('jdbc') || lower.includes('hibernate')) return MySQLIcon;
+    if (lower.includes('python') || lower.includes('machine learning')) return PythonIcon;
+    if (lower.includes('javascript')) return JavaScriptIcon;
+    if (lower.includes('tailwind')) return TailwindIcon;
+    if (lower.includes('html')) return HTML5Icon;
+    if (lower.includes('css')) return CSS3Icon;
+    if (lower.includes('git')) return GitIcon;
+    if (lower.includes('postman')) return PostmanIcon;
+    if (lower.includes('jwt') || lower.includes('security')) return JWTIcon;
+    return JavaIcon;
+  };
+
+  // Split skills into two streams
+  const half = Math.ceil(skills.length / 2);
+  const track1 = skills.slice(0, half);
+  const track2 = skills.slice(half);
 
   return (
     <section id="skills" className="relative min-h-[100dvh] w-full py-20 bg-slate-50/50 border-t border-slate-200/80 flex flex-col justify-center overflow-hidden">
@@ -81,11 +101,11 @@ export default function Skills() {
               }}
               className="flex items-center gap-5 w-max"
             >
-              {[...track1Technologies, ...track1Technologies].map((tech, index) => {
-                const Icon = tech.Icon;
+              {[...track1, ...track1].map((skill, index) => {
+                const Icon = getOfficialIcon(skill);
                 return (
                   <div
-                    key={`track1-${tech.name}-${index}`}
+                    key={`track1-${skill.name}-${index}`}
                     className="flex items-center gap-4 px-6 py-4 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-xl hover:border-indigo-300 hover:scale-105 transition-all duration-300 cursor-pointer shrink-0 group min-w-[260px] sm:min-w-[290px]"
                   >
                     <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2.5 group-hover:scale-110 transition-transform shadow-xs">
@@ -93,10 +113,10 @@ export default function Skills() {
                     </div>
                     <div className="text-left">
                       <h4 className="text-base font-black text-slate-950 group-hover:text-indigo-600 transition-colors leading-tight">
-                        {tech.name}
+                        {skill.name}
                       </h4>
                       <p className="text-xs font-mono text-slate-500 mt-1">
-                        {tech.role}
+                        {skill.role || skill.desc || 'Full Stack Technology'}
                       </p>
                     </div>
                   </div>
@@ -120,11 +140,11 @@ export default function Skills() {
               }}
               className="flex items-center gap-5 w-max"
             >
-              {[...track2Technologies, ...track2Technologies].map((tech, index) => {
-                const Icon = tech.Icon;
+              {[...track2, ...track2].map((skill, index) => {
+                const Icon = getOfficialIcon(skill);
                 return (
                   <div
-                    key={`track2-${tech.name}-${index}`}
+                    key={`track2-${skill.name}-${index}`}
                     className="flex items-center gap-4 px-6 py-4 rounded-3xl bg-white border border-slate-200/90 shadow-card hover:shadow-xl hover:border-cyan-300 hover:scale-105 transition-all duration-300 cursor-pointer shrink-0 group min-w-[260px] sm:min-w-[290px]"
                   >
                     <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2.5 group-hover:scale-110 transition-transform shadow-xs">
@@ -132,10 +152,10 @@ export default function Skills() {
                     </div>
                     <div className="text-left">
                       <h4 className="text-base font-black text-slate-950 group-hover:text-cyan-600 transition-colors leading-tight">
-                        {tech.name}
+                        {skill.name}
                       </h4>
                       <p className="text-xs font-mono text-slate-500 mt-1">
-                        {tech.role}
+                        {skill.role || skill.desc || 'Full Stack Technology'}
                       </p>
                     </div>
                   </div>

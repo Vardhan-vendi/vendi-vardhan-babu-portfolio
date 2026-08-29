@@ -9,13 +9,18 @@ import {
   RotateCcw, 
   FileText, 
   CheckCircle2, 
-  ExternalLink 
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { personalData } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
+import { renderPdfFirstPageToImage } from '../utils/pdfToImage';
 
 export default function ResumeModal({ isOpen, onClose }) {
+  const { personal, resumePdfUrl, resumePreviewUrl } = usePortfolio();
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [activePreviewSrc, setActivePreviewSrc] = useState(resumePreviewUrl || '/resume-preview.png');
+  const [isLoadingPdf, setIsLoadingPdf] = useState(false);
 
   useEffect(() => {
     setZoomLevel(1);
@@ -28,6 +33,37 @@ export default function ResumeModal({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen]);
 
+  // Dynamically resolve preview image whenever modal opens or resume changes
+  useEffect(() => {
+    async function resolvePreview() {
+      if (!isOpen) return;
+
+      // If we have a custom generated preview, use it
+      if (resumePreviewUrl && resumePreviewUrl !== '/resume-preview.png') {
+        setActivePreviewSrc(resumePreviewUrl);
+        return;
+      }
+
+      // If we have a custom uploaded PDF, render its first page
+      if (resumePdfUrl && (resumePdfUrl.startsWith('data:application/pdf') || resumePdfUrl.startsWith('blob:'))) {
+        setIsLoadingPdf(true);
+        try {
+          const renderedImg = await renderPdfFirstPageToImage(resumePdfUrl);
+          setActivePreviewSrc(renderedImg);
+        } catch (err) {
+          console.warn('Could not render PDF in modal, falling back:', err);
+          setActivePreviewSrc(resumePreviewUrl || '/resume-preview.png');
+        } finally {
+          setIsLoadingPdf(false);
+        }
+      } else {
+        setActivePreviewSrc(resumePreviewUrl || '/resume-preview.png');
+      }
+    }
+
+    resolvePreview();
+  }, [isOpen, resumePdfUrl, resumePreviewUrl]);
+
   if (!isOpen) return null;
 
   const handleDownload = () => {
@@ -38,7 +74,7 @@ export default function ResumeModal({ isOpen, onClose }) {
     });
 
     const link = document.createElement('a');
-    link.href = '/Vendi_Vardhan_Babu_Resume.pdf';
+    link.href = resumePdfUrl || '/Vendi_Vardhan_Babu_Resume.pdf';
     link.download = 'Vendi_Vardhan_Babu_Resume.pdf';
     document.body.appendChild(link);
     link.click();
@@ -46,7 +82,7 @@ export default function ResumeModal({ isOpen, onClose }) {
   };
 
   const handlePrint = () => {
-    window.open('/Vendi_Vardhan_Babu_Resume.pdf', '_blank');
+    window.open(resumePdfUrl || '/Vendi_Vardhan_Babu_Resume.pdf', '_blank');
   };
 
   const zoomIn = () => setZoomLevel(prev => Math.min(prev + 0.2, 2.2));
@@ -73,14 +109,14 @@ export default function ResumeModal({ isOpen, onClose }) {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">
-                  {personalData.name} — Official Resume
+                  {personal.name} — Official Resume
                 </h3>
                 <span className="hidden sm:inline-block text-[10px] uppercase font-mono px-2 py-0.2 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
                   Verified PDF
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-mono">
-                {personalData.role}
+                {personal.role}
               </p>
             </div>
           </div>
@@ -130,16 +166,23 @@ export default function ResumeModal({ isOpen, onClose }) {
 
         {/* Viewport */}
         <div className="relative flex-1 bg-slate-100 overflow-auto p-4 sm:p-6 flex items-start justify-center select-none">
-          <div 
-            style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
-            className="transition-transform duration-200 ease-out max-w-3xl w-full bg-white rounded-xl shadow-lg border border-slate-300 overflow-hidden"
-          >
-            <img
-              src="/resume-preview.png"
-              alt="Vendi Vardhan Babu - Resume Preview"
-              className="w-full h-auto object-contain block"
-            />
-          </div>
+          {isLoadingPdf ? (
+            <div className="flex flex-col items-center justify-center my-auto py-20 text-slate-500 gap-3">
+              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+              <span className="text-xs font-bold font-mono">Loading updated vector resume...</span>
+            </div>
+          ) : (
+            <div 
+              style={{ transform: `scale(${zoomLevel})`, transformOrigin: 'top center' }}
+              className="transition-transform duration-200 ease-out max-w-3xl w-full bg-white rounded-xl shadow-lg border border-slate-300 overflow-hidden"
+            >
+              <img
+                src={activePreviewSrc}
+                alt="Resume Preview"
+                className="w-full h-auto object-contain block"
+              />
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -150,7 +193,7 @@ export default function ResumeModal({ isOpen, onClose }) {
           </div>
 
           <a
-            href="/Vendi_Vardhan_Babu_Resume.pdf"
+            href={resumePdfUrl || "/Vendi_Vardhan_Babu_Resume.pdf"}
             target="_blank"
             rel="noreferrer"
             className="text-indigo-600 hover:underline font-semibold flex items-center gap-1"

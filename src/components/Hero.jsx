@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { JavaIcon, SpringBootIcon, ReactIcon, NodeIcon } from './icons/TechIcons';
 import GithubIcon from './icons/GithubIcon';
-import { personalData } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 
 // 4 Floating Skill Badges with official brand icons
 const skillOrbs = [
@@ -30,10 +30,11 @@ const skillOrbs = [
 ];
 
 export default function Hero({ onOpenResume }) {
+  const { personal, certificates } = usePortfolio();
   const [copied, setCopied] = useState(false);
 
   const copyEmail = () => {
-    navigator.clipboard.writeText(personalData.email);
+    navigator.clipboard.writeText(personal.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -78,7 +79,7 @@ export default function Hero({ onOpenResume }) {
             <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black text-slate-950 tracking-tight leading-[1.04] mb-3">
               Hi, I'm <br />
               <span className="accent-gradient-text">
-                {personalData.name}
+                {personal.name}
               </span>
             </h1>
 
@@ -138,7 +139,7 @@ export default function Hero({ onOpenResume }) {
               <span className="text-slate-300">•</span>
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 stroke-[2.5] text-slate-400" />
-                <span>{personalData.location}</span>
+                <span>{personal.location}</span>
               </div>
             </div>
 
@@ -176,7 +177,7 @@ export default function Hero({ onOpenResume }) {
               {/* Main Transparent Portrait */}
               <motion.img
                 src="/profile-transparent.png"
-                alt={personalData.name}
+                alt={personal.name}
                 animate={{ y: [0, -6, 0] }}
                 transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
                 className="w-full h-auto max-h-[380px] sm:max-h-[440px] md:max-h-[480px] object-contain drop-shadow-[0_20px_40px_rgba(15,23,42,0.18)]"
@@ -185,7 +186,7 @@ export default function Hero({ onOpenResume }) {
               {/* Bottom Identity Pill */}
               <div className="absolute -bottom-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-md flex items-center gap-2 z-20">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-black text-slate-900 tracking-wide">{personalData.name}</span>
+                <span className="text-xs font-black text-slate-900 tracking-wide">{personal.name}</span>
                 <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-extrabold border border-indigo-200">
                   9.02 CGPA
                 </span>

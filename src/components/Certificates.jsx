@@ -8,11 +8,11 @@ import {
   Building2, 
   Calendar
 } from 'lucide-react';
-import { certificatesData } from '../data/portfolioData';
+import { usePortfolio } from '../context/PortfolioContext';
 import CertificateModal from './CertificateModal';
 
 const categories = [
-  { id: 'all', label: 'All Certifications (13)' },
+  { id: 'all', label: 'All Certifications' },
   { id: 'Frontend & React', label: 'React & Frontend' },
   { id: 'Backend & APIs', label: 'Backend & APIs' },
   { id: 'Python & SQL', label: 'Python & SQL' },
@@ -21,13 +21,14 @@ const categories = [
 ];
 
 export default function Certificates() {
+  const { certificates } = usePortfolio();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeIndex, setActiveIndex] = useState(0);
   const [activeCertModal, setActiveCertModal] = useState(null);
 
   const filteredCerts = selectedCategory === 'all' 
-    ? certificatesData 
-    : certificatesData.filter(c => c.category === selectedCategory || (selectedCategory === 'Frontend & React' && c.category.includes('Frontend')));
+    ? certificates 
+    : certificates.filter(c => c.category === selectedCategory || (selectedCategory === 'Frontend & React' && c.category.includes('Frontend')));
 
   useEffect(() => {
     if (activeIndex >= filteredCerts.length) {
@@ -242,7 +243,7 @@ export default function Certificates() {
           {activeCertModal && (
             <CertificateModal
               certificate={activeCertModal}
-              allCertificates={certificatesData}
+              allCertificates={certificates}
               onClose={() => setActiveCertModal(null)}
               onSelect={(c) => setActiveCertModal(c)}
             />
