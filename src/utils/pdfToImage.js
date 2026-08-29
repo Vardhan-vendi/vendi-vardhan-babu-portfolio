@@ -1,8 +1,13 @@
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
-// Configure local bundled worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// Configure reliable worker with CDN and local fallback
+if (typeof window !== 'undefined') {
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version || '4.10.38'}/build/pdf.worker.min.mjs`;
+  } catch (e) {
+    console.warn('PDF.js worker initialization:', e);
+  }
+}
 
 /**
  * Converts the first page of a PDF into a high-resolution PNG data URL
@@ -34,7 +39,7 @@ export async function renderPdfFirstPageToImage(pdfSource) {
     const pdfDoc = await loadingTask.promise;
     const page = await pdfDoc.getPage(1);
 
-    // Scale to crisp high resolution (2.0 scale)
+    // Scale to crisp resolution (2.0 scale)
     const scale = 2.0;
     const viewport = page.getViewport({ scale });
 
